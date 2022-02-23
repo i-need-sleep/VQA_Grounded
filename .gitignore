@@ -3,3 +3,6 @@
 /models/ALBEF/checkpoints
 
 /output
+
+/sh/*.err
+/sh/*.out

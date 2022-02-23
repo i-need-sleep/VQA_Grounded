@@ -17,7 +17,8 @@ class vqa_viswis_dataset(Dataset):
             self.ann.append(val)
 
         self.transform = transform
-        self.vqa_root = vqa_root
+
+        self.vqa_root = vqa_root[split]
         self.max_ques_words = max_ques_words
         self.eos = eos
         
