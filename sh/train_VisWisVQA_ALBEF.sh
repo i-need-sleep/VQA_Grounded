@@ -23,5 +23,5 @@ cd /gpfsnyu/scratch/yh2689/VQA_Grounded/models/ALBEF/     # 切到程序目录
 echo "START"               # 输出起始信息
 source deactivate
 source /gpfsnyu/packages/anaconda3/5.2.0/bin/activate wilson          # 调用 virtual env
-python -u VQA_viswis.py \
+python -u VQA_viswis.py 
 echo "FINISH"                       # 输出起始信息
