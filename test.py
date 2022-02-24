@@ -1,4 +1,4 @@
-from model.ALBEF.dataset.vqa_dataset import vqa_dataset
+from models.tokenization_bert import BertTokenizer
 
-dataset = vqa_dataset
-
+BertTokenizer.from_pretrained('bert-base-uncased')
+print('done!')

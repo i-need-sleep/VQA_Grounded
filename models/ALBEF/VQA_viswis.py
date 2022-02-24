@@ -202,6 +202,7 @@ def main(args, config):
             if args.distributed:
                 train_loader.sampler.set_epoch(epoch)
 
+            model.train()
             train_stats = train(model, train_loader, optimizer, tokenizer, epoch, warmup_steps, device, lr_scheduler, config)  
 
         if args.evaluate:
@@ -221,12 +222,13 @@ def main(args, config):
                 'config': config,
                 'epoch': epoch,
             }
-            torch.save(save_obj, os.path.join(args.output_dir, 'checkpoint_%02d.pth'%epoch))  
+            torch.save(save_obj, os.path.join(args.output_dir, 'checkpoint_%02d.pth'%epoch))     
 
-        dist.barrier()   
-  
-    vqa_result = evaluation(model, test_loader, tokenizer, device, config)        
-    result_file = save_result(vqa_result, args.result_dir, 'vqa_result_epoch%d'%epoch)
+        model.eval()
+        with torch.no_grad():
+            vqa_result = evaluation(model, test_loader, tokenizer, device, config)    
+        print(f'Eval: epoch {epoch}')    
+        result_file = save_result(vqa_result, args.result_dir, 'vqa_result_epoch%d'%epoch)
                      
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
@@ -239,9 +241,9 @@ if __name__ == '__main__':
     parser.add_argument('--config', default='./configs/VQA_viswis.yaml') 
     parser.add_argument('--checkpoint', default='./checkpoints/ALBEF.pth') 
     parser.add_argument('--output_dir', default='../../output/vqa')
-    parser.add_argument('--evaluate', action='store_true')    
-    parser.add_argument('--text_encoder', default='bert-base-uncased')
-    parser.add_argument('--text_decoder', default='bert-base-uncased')
+    parser.add_argument('--evaluate', action='store_true', default=False)    
+    parser.add_argument('--text_encoder', default='../../cache/bert-base-uncased')
+    parser.add_argument('--text_decoder', default='../../cache/bert-base-uncased')
     parser.add_argument('--device', default='cuda')
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--world_size', default=1, type=int, help='number of distributed processes')    

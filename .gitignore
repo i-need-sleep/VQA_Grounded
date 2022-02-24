@@ -1,5 +1,5 @@
 /data
-
+/cache
 /models/ALBEF/checkpoints
 
 /output
@@ -7,4 +7,6 @@
 /sh/*.err
 /sh/*.out
 
-*.pyc
+**/__pycache__
+
+test.py
