@@ -6,3 +6,5 @@
 
 /sh/*.err
 /sh/*.out
+
+*.pyc

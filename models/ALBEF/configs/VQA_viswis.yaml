@@ -3,7 +3,7 @@ train_file: ['../../data/VisWis_VQA_Grounding/annotations/train_grounding.json']
 test_file: ['../../data/VisWis_VQA_Grounding/annotations/val_grounding.json']
 answer_list: '../../processed/answer_list.json'
 
-vqa_root: {'train': '../../data/VisWis_VQA_Grounding/train', 'tset': '../../data/VisWis_VQA_Grounding/val'}
+vqa_root: {'train': '../../data/VisWis_VQA_Grounding/train', 'test': '../../data/VisWis_VQA_Grounding/val'}
 # vg_root: '/export/share/datasets/vision/visual-genome/'  #image/
 
 image_res: 384
