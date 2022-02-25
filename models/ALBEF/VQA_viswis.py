@@ -86,12 +86,17 @@ def evaluation(model, data_loader, tokenizer, device, config) :
         image = image.to(device,non_blocking=True)             
         question_input = tokenizer(question, padding='longest', return_tensors="pt").to(device)        
 
-        topk_ids, topk_probs = model(image, question_input, answer_input, train=False, k=config['k_test'])      
-        
-        for ques_id, topk_id, topk_prob in zip(question_id, topk_ids, topk_probs):
-            ques_id = int(ques_id.item())          
-            _, pred = topk_prob.max(dim=0)
-            result.append({"question_id":ques_id, "answer":data_loader.dataset.answer_list[topk_id[pred]]})   
+        try:
+            topk_ids, topk_probs = model(image, question_input, answer_input, train=False, k=config['k_test'])      
+            
+            for ques_id, topk_id, topk_prob in zip(question_id, topk_ids, topk_probs):
+                ques_id = int(ques_id.item())          
+                _, pred = topk_prob.max(dim=0)
+                result.append({"question_id":ques_id, "answer":data_loader.dataset.answer_list[topk_id[pred]]})   
+        except:
+            for ques_id in question_id:
+                ques_id = int(ques_id.item())     
+                result.append({"question_id":ques_id, "answer":'corrupted image'})   
 
     return result
 
