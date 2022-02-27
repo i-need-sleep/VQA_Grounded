@@ -46,7 +46,7 @@ class ALBEF(nn.Module):
             self.momentum = 0.995
         
 
-    def forward(self, image, quesiton, answer=None, alpha=0, k=None, weights=None, train=True):
+    def forward(self, image, quesiton, answer=None, alpha=0, k=None, weights=None, train=True, return_logits=False):
         
         image_embeds = self.visual_encoder(image) 
         image_atts = torch.ones(image_embeds.size()[:-1],dtype=torch.long).to(image.device)
@@ -123,7 +123,11 @@ class ALBEF(nn.Module):
                                                 attention_mask = quesiton.attention_mask, 
                                                 encoder_hidden_states = image_embeds,
                                                 encoder_attention_mask = image_atts,                                    
-                                                return_dict = True)                    
+                                                return_dict = True)    
+            if return_logits:
+                topk_ids, topk_probs, logits = self.rank_answer(question_output.last_hidden_state, quesiton.attention_mask, 
+                                                    answer.input_ids, answer.attention_mask, k, return_logits=return_logits)  
+                return topk_ids, topk_probs, logits            
             topk_ids, topk_probs = self.rank_answer(question_output.last_hidden_state, quesiton.attention_mask, 
                                                     answer.input_ids, answer.attention_mask, k) 
             return topk_ids, topk_probs
@@ -145,7 +149,7 @@ class ALBEF(nn.Module):
                 param_m.data = param_m.data * self.momentum + param.data * (1. - self.momentum)
                 
                 
-    def rank_answer(self, question_states, question_atts, answer_ids, answer_atts, k):
+    def rank_answer(self, question_states, question_atts, answer_ids, answer_atts, k, return_logits=False):
         
         num_ques = question_states.size(0)
         start_ids = answer_ids[0,0].repeat(num_ques,1) # bos token
@@ -202,6 +206,8 @@ class ALBEF(nn.Module):
         topk_probs, rerank_id = topk_probs.topk(k,dim=1) 
         topk_ids = torch.gather(topk_ids, 1, rerank_id)    
 
+        if return_logits:
+            return topk_ids, topk_probs, logits
         return topk_ids, topk_probs
     
 def tile(x, dim, n_tile):

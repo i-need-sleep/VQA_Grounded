@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=rcnn_get_segs       # 任务名
+#SBATCH --job-name=ALBEF_gradcam       # 任务名
 #SBATCH --nodes=1                   # 这里不用动 多节点脚本请查官方文档
 #SBATCH --ntasks=1                  # 这里不用动 多任务脚本请查官方文档
 #SBATCH --cpus-per-task=8           # 要几块CPU (一般4块就够用了)
@@ -13,14 +13,14 @@
 #SBATCH -p aquila                   # 有GPU的partition
 
 module purge                        # 清除所有已加载的模块
-module load anaconda3 cuda/11.3.1              # 加载anaconda (load virtual env for training)
+module load anaconda3 cuda/11.1.1              # 加载anaconda (load virtual env for training)
 
 nvidia-smi
 nvcc --version
-cd /gpfsnyu/scratch/yh2689/VQA_Grounded/scripts     # 切到程序目录
+cd /gpfsnyu/scratch/yh2689/VQA_Grounded/models/ALBEF/     # 切到程序目录
 
 echo "START"               # 输出起始信息
 source deactivate
-source /gpfsnyu/packages/anaconda3/5.2.0/bin/activate detectron          # 调用 virtual env
-python -u get_segmentations_detectron.py 
+source /gpfsnyu/packages/anaconda3/5.2.0/bin/activate wilson          # 调用 virtual env
+python -u albef_gradcam.py 
 echo "FINISH"                       # 输出起始信息

@@ -41,5 +41,5 @@ def get_segmentation_masks(in_dir = '../data/VisWis_VQA_Grounding/val', out_path
 
 if __name__ == '__main__':
     get_segmentation_masks()
-    get_segmentation_masks(in_dir = '../data/VisWis_VQA_Grounding/test')
+    # get_segmentation_masks(in_dir = '../data/VisWis_VQA_Grounding/test')
     print("done!!")
