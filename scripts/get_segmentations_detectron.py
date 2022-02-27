@@ -40,6 +40,6 @@ def get_segmentation_masks(in_dir = '../data/VisWis_VQA_Grounding/val', out_path
     return
 
 if __name__ == '__main__':
-    get_segmentation_masks()
-    # get_segmentation_masks(in_dir = '../data/VisWis_VQA_Grounding/test')
+    # get_segmentation_masks()
+    get_segmentation_masks(in_dir = '../data/VisWis_VQA_Grounding/test', out_path = '../processed/rcnn_segs_test.pth')
     print("done!!")

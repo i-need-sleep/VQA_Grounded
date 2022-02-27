@@ -29,10 +29,14 @@ CONFIG_PATH = './configs/VQA_viswis.yaml'
 CACHE_DIR = '../../cache/'
 CHECKPOINT_PATH = '../../output/vqa/epo13_saved.pth'
 GT_PATH = '../../data/VisWis_VQA_Grounding/annotations/val_grounding.json'
-GT_MASK_DIR = '../../data/VisWis_VQA_Grounding/val/'
+GT_PATH_TEST = '../../data/VisWis_VQA_Grounding/annotations/test_grounding.json'
+GT_MASK_DIR = '../../data/VisWis_VQA_Grounding/binary_masks_png/val/'
 IMG_DIR = '../../data/VisWis_VQA_Grounding/val/'
+IMG_DIR_TEST = '../../data/VisWis_VQA_Grounding/val/test/'
 SEG_PATH = '../../processed/rcnn_segs.pth'
+SEG_PATH = '../../processed/rcnn_segs_TEST.pth'
 OUT_DIR = '../../output/albef_gradcam/'
+OUT_DIR_TEST = '../../output/albef_gradcam_test/'
 BLOCK_NUM = 8
 THRESH = 0.5
 
@@ -52,15 +56,19 @@ def getAttMap(img, attMap, blur = True, overlap = False):
         attMap = 1*(1-attMap**0.7).reshape(attMap.shape + (1,))*img + (attMap**0.7).reshape(attMap.shape+(1,)) * attMapV
     return attMap
 
-def albef_gradcam():
+def albef_gradcam(val = True):
     # Setup
     config = yaml.load(open(CONFIG_PATH, 'r'), Loader=yaml.Loader)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}')
 
     # Original image paths
-    with open(GT_PATH, 'r') as f:
-        trues_data = json.load(f)
+    if val:
+        with open(GT_PATH, 'r') as f:
+            trues_data = json.load(f)
+    else:
+        with open(GT_PATH_TEST, 'r') as f:
+            trues_data = json.load(f)
     trues = []
     for key, val in trues_data.items():
         trues.append(key)
@@ -96,7 +104,10 @@ def albef_gradcam():
     answer_input = tokenizer(answer_list, padding='longest', return_tensors='pt').to(device)   
 
     # Load seg data
-    seg_data = torch.load(SEG_PATH, map_location=torch.device('cpu'))
+    if val:
+        seg_data = torch.load(SEG_PATH, map_location=torch.device('cpu'))
+    else:
+        seg_data = torch.load(SEG_PATH_TEST, map_location=torch.device('cpu'))
     
     IoUs = []
     # Compute gradcam
@@ -125,7 +136,10 @@ def albef_gradcam():
         
         # Fetch original image
         img_id = trues[idx]
-        img_path = f'{IMG_DIR}{img_id}'
+        if val:
+            img_path = f'{IMG_DIR}{img_id}'
+        else:
+            img_path = f'{IMG_DIR_TEST}{img_id}'
 
         rgb_image = cv2.imread(img_path)[:, :, ::-1]
         rgb_image = np.float32(rgb_image) / 255
@@ -144,20 +158,12 @@ def albef_gradcam():
         img_out[activated] = 1
         img_out[inactivated] = 0
 
-        # img = Image.fromarray(img_out, 'RGB')
-        # img.save('test.png')
-        # img = Image.fromarray(rgb_image, 'RGB')
-        # img.save('test_original.png')
-        print(img_path)
-
         # Fetch segmentations
         if 'test' in img_id:
             key = '../data/VisWis_VQA_Grounding/test/' + img_id
         else:
             key = '../data/VisWis_VQA_Grounding/val/' + img_id
         segs = seg_data[key]
-        # print(img_out.shape)
-        # print(segs.shape)
         img_out = torch.tensor(img_out).to(device).unsqueeze(0)
         segs = segs.to(device)
         seg_mask = segs * img_out
@@ -167,34 +173,45 @@ def albef_gradcam():
         seg_mask[seg_mask > 0] = 1
         seg_mask = seg_mask.unsqueeze(1)
         seg_mask = seg_mask.unsqueeze(1)
-        # print(seg_mask.shape)
         
         mask = segs * seg_mask 
         
         mask = torch.sum(mask, axis=0)
-        mask[mask > 0] = 1
-        img = Image.fromarray(mask.cpu().detach().numpy(), 'RGB')
-        img.save(f'{OUT_DIR}{img_id}')
+        mask[mask > 0] = 255
 
-        # Fetch GT mask
-        gt_path = f'{GT_MASK_DIR}{img_id}'
-        img = cv2.imread(gt_path)[:,:,0]
-        img = torch.tensor(img)
-        img[img>0] = 1
+        # Save the image
+        mask_out = mask.cpu().detach().numpy()
+        mask_out = np.expand_dims(mask_out, axis=2)
+        mask_out = np.repeat(mask_out, 3, axis=2)
+        if val:
+            cv2.imwrite(f'{OUT_DIR}{img_id[:-4]}.png', mask_out)
+        else:
+            cv2.imwrite(f'{OUT_DIR_TEST}{img_id[:-4]}.png', mask_out)
 
-        img = img.to(device)
+        if val:
+            # Fetch GT mask
+            mask[mask > 0] = 1
+            gt_path = f'{GT_MASK_DIR}{img_id[:-4]}.png'
+            img = cv2.imread(gt_path)[:,:,0]
+            img = torch.tensor(img)
+            img[img>0] = 1
+
+            img = img.to(device)
         
+            # Get IOU
+            I = img * mask
+            U = img + mask
+            U[U > 0] = 1
+            IoU = torch.sum(I) / torch.sum(U)
+            IoUs.append(IoU.cpu().item())
+            print(gt_path)
+            # break
 
-        # Get IOU
-        I = img * mask
-        U = img + mask
-        U[U > 0] = 1
-        IoU = torch.sum(I) / torch.sum(U)
-        IoUs.append(IoU.cpu().item())
-
-    print(sum(IoUs)/len(IoUs))
+    if val:
+        print(sum(IoUs)/len(IoUs))
     return
 
 if __name__ == '__main__':
     albef_gradcam()
+    albef_gradcam(val=False)
     print('Done!!!')
