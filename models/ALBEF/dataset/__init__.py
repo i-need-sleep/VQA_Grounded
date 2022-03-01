@@ -55,8 +55,9 @@ def create_dataset(dataset, config):
 
     elif dataset=='vqa_viswis': 
         train_dataset = vqa_viswis_dataset(config['train_file'], train_transform, config['vqa_root'], split='train') 
-        vqa_test_dataset = vqa_viswis_dataset(config['test_file'], test_transform, config['vqa_root'], split='test', answer_list=config['answer_list'])       
-        return train_dataset, vqa_test_dataset
+        vqa_test_dataset = vqa_viswis_dataset(config['test_file'], test_transform, config['vqa_root'], split='test', answer_list=config['answer_list'])   
+        vqa_test_dataset2 = vqa_viswis_dataset(config['test_file2'], test_transform, config['vqa_root'], split='test2', answer_list=config['answer_list'])     
+        return train_dataset, vqa_test_dataset, vqa_test_dataset2
 
     elif dataset=='nlvr':   
         train_dataset = nlvr_dataset(config['train_file'], train_transform, config['image_root'])  
@@ -80,8 +81,8 @@ def create_dataset(dataset, config):
                 normalize,
             ])         
         train_dataset = grounding_dataset(config['train_file'], train_transform, config['image_root'], mode='train')       
-        test_dataset = grounding_dataset(config['test_file'], test_transform, config['image_root'], mode='test')             
-        return train_dataset, test_dataset    
+        test_dataset = grounding_dataset(config['test_file'], test_transform, config['image_root'], mode='test')              
+        return train_dataset, test_dataset
     
 
 def vqa_collate_fn(batch):

@@ -22,7 +22,7 @@ class vqa_viswis_dataset(Dataset):
         self.max_ques_words = max_ques_words
         self.eos = eos
         
-        if split=='test':
+        if split !='train':
             self.max_ques_words = 50 # do not limit question length during test
             self.answer_list = json.load(open(answer_list,'r'))   
                 
@@ -39,7 +39,7 @@ class vqa_viswis_dataset(Dataset):
         image = Image.open(image_path).convert('RGB')   
         image = self.transform(image)          
         
-        if self.split == 'test':
+        if self.split != 'train':
             question = pre_question(ann['question'],self.max_ques_words)
             return image, question, index
 
