@@ -245,7 +245,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', default='./configs/VQA_viswis.yaml') 
     parser.add_argument('--checkpoint', default='./checkpoints/ALBEF.pth') 
-    parser.add_argument('--output_dir', default='../../output/vqa')
+    parser.add_argument('--output_dir', default='../../output/vqa_mask')
     parser.add_argument('--evaluate', action='store_true', default=False)    
     parser.add_argument('--text_encoder', default='../../cache/bert-base-uncased')
     parser.add_argument('--text_decoder', default='../../cache/bert-base-uncased')
