@@ -32,6 +32,7 @@ def eval(pred_path, true_path):
 if __name__ == '__main__':
     true_path = '../data/VisWis_VQA_Grounding/annotations/val_grounding.json'
     pred_root = '../output/vqa/result/*'
+    # pred_root = '../output/vqa_mask/result/*'
 
     for pred_path in glob.glob(pred_root):
         
