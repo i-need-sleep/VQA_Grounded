@@ -1,13 +1,14 @@
 from yaml import load
 import torch
 from utils.ocr_dataset import make_ocr_seqcls_loader, prep_input
+from models.ocr_seqcls import OCR_seqcls_model
 
-a = torch.tensor([[[1,2],[3,4]],[[5,6],[7,8]]])
-print(a)
-a = a.reshape(2,4)
-print(a)
-
+model = OCR_seqcls_model()
 loader, tokenizer = make_ocr_seqcls_loader('VisWiz_VQA', 'train', 3)
 for batch in loader:
-    print(prep_input(batch, tokenizer))
+    tokenized, coords_in, cls_mask, outs, img_names = prep_input(batch, tokenizer)
+    print(cls_mask)
+    out = model(tokenized, coords_in, cls_mask)
+    print(out)
+    print(out.shape)
     break
